@@ -117,6 +117,15 @@ for ax in axs[:, 0]:
 
 Before handing off or saving a final visualization, inspect the rendered figure itself, not just the code. Make small spacing and label edits in this order so the result stays Allen-like: clear, spacious, and intentional without feeling conventional or loose.
 
+Avoid these common failures:
+- Separate title/subtitle from subplot titles; no collisions or tight stacking.
+- Clear the central gutter; no inner y labels, tick labels, or spines crowding neighboring panels.
+- Remove repeated y-label clutter when units match; use one shared outer label.
+- Avoid huge left rails; increase only enough for labels to read without clipping.
+- Keep callouts/direct labels sparse and outside marks, error bars, and dense traces.
+- Do not cycle the full bright palette at full saturation; reserve strong accents for real distinctions or highlights.
+- Replace generic centered Matplotlib titles with a left-aligned figure title and short local panel titles.
+
 - Save or display a draft render at the final size. Check that the figure title, subtitle, and subplot titles do not collide or feel stacked too tightly. Add title-band space, `suptitle`/`fig.text` y-offset, or subplot title padding before reducing type.
 - Check every edge of the saved image for clipped tick labels, axis labels, legends, subtitles, captions, and slash-separated dataset names. Increase `left`, `right`, `bottom`, or `top` margins before shrinking labels.
 - For multi-panel y axes, apply the inner-axis cleanup rule: remove duplicate inner/right y labels and y tick labels only when units match, use a shared outer y label when helpful, increase `wspace`/`labelpad` before shrinking type, and verify the central gutter is clear.
