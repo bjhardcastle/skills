@@ -176,12 +176,13 @@ def style_axis(ax: plt.Axes, metric: str, weekdays: list[str]) -> None:
         loc="left",
         fontsize=11,
         fontweight="bold",
-        pad=9,
+        pad=12,
     )
     ax.set_xticks(range(len(weekdays)))
     ax.set_xticklabels([weekday.lower() for weekday in weekdays])
     ax.set_ylabel("mean +/- SEM", fontsize=9.5)
     ax.grid(axis="y")
+    ax.grid(axis="x", visible=False)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color(ALLEN["gray1"])
@@ -200,8 +201,8 @@ def make_plot(summary: pl.DataFrame) -> None:
         right=0.98,
         bottom=0.13,
         top=0.81,
-        hspace=0.34,
-        wspace=0.26,
+        hspace=0.42,
+        wspace=0.30,
     )
 
     fig.suptitle(
