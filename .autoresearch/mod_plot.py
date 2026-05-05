@@ -7,18 +7,11 @@
 # ///
 from __future__ import annotations
 
-import math
 from pathlib import Path
-
-import matplotlib
-
-matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import polars as pl
 from cycler import cycler
-from matplotlib import font_manager
-from matplotlib.ticker import MaxNLocator, PercentFormatter
 
 
 SOURCE = Path(
@@ -26,6 +19,14 @@ SOURCE = Path(
 )
 OUT_DIR = Path(__file__).resolve().parent
 FIGURE_PATH = OUT_DIR / "plot.png"
+
+PLOTS = (
+    ("hit_rate", "line"),
+    ("false_alarm_rate", "line"),
+    ("vis_dprime", "bar"),
+    ("aud_dprime", "bar"),
+)
+METRICS = tuple(metric for metric, _ in PLOTS)
 
 ALLEN = {
     "black": "#000000",
@@ -45,74 +46,55 @@ ALLEN = {
     "yellow": "#FFEB23",
 }
 ALLEN_SERIES = [
-    ALLEN[key]
-    for key in ("blue", "orange", "teal", "violet", "green", "rose", "maroon")
+    ALLEN["blue"],
+    ALLEN["orange"],
+    ALLEN["teal"],
+    ALLEN["violet"],
+    ALLEN["green"],
+    ALLEN["rose"],
+    ALLEN["maroon"],
+    ALLEN["ochre"],
+    ALLEN["yellow"],
 ]
-
-PLOTS = (
-    ("hit_rate", "line"),
-    ("false_alarm_rate", "line"),
-    ("vis_dprime", "bar"),
-    ("aud_dprime", "bar"),
-)
-METRICS = tuple(metric for metric, _ in PLOTS)
-PLOT_META = {
-    "hit_rate": {
-        "title": "hit rate/",
-        "ylabel": "mean rate",
-        "color": ALLEN["blue"],
-        "percent": True,
-        "higher_is_better": True,
-    },
-    "false_alarm_rate": {
-        "title": "false alarm rate/",
-        "ylabel": "mean rate",
-        "color": ALLEN["orange"],
-        "percent": True,
-        "higher_is_better": False,
-    },
-    "vis_dprime": {
-        "title": "visual d-prime/",
-        "ylabel": "d-prime",
-        "color": ALLEN["teal"],
-        "percent": False,
-        "higher_is_better": True,
-    },
-    "aud_dprime": {
-        "title": "auditory d-prime/",
-        "ylabel": "d-prime",
-        "color": ALLEN["violet"],
-        "percent": False,
-        "higher_is_better": True,
-    },
+METRIC_LABELS = {
+    "hit_rate": "hit rate",
+    "false_alarm_rate": "false alarm rate",
+    "vis_dprime": "visual d-prime",
+    "aud_dprime": "auditory d-prime",
+}
+METRIC_COLORS = {
+    "hit_rate": ALLEN["blue"],
+    "false_alarm_rate": ALLEN["orange"],
+    "vis_dprime": ALLEN["teal"],
+    "aud_dprime": ALLEN["violet"],
 }
 
 
-def allen_font_family() -> str:
-    available = {font.name for font in font_manager.fontManager.ttflist}
-    for candidate in ("Allen Institute Text", "Helvetica Neue", "Arial"):
-        if candidate in available:
-            return candidate
-    return "sans-serif"
-
-
-plt.rcParams.update(
-    {
-        "figure.facecolor": ALLEN["white"],
-        "axes.facecolor": ALLEN["white"],
-        "axes.edgecolor": ALLEN["black"],
-        "axes.labelcolor": ALLEN["black"],
-        "axes.prop_cycle": cycler(color=ALLEN_SERIES),
-        "font.family": allen_font_family(),
-        "font.size": 10,
-        "grid.color": ALLEN["page2"],
-        "savefig.facecolor": ALLEN["white"],
-        "savefig.edgecolor": ALLEN["white"],
-        "text.color": ALLEN["black"],
-        "xtick.color": ALLEN["gray2"],
-        "ytick.color": ALLEN["gray2"],
-    }
-)
+def apply_allen_style() -> None:
+    plt.rcParams.update(
+        {
+            "figure.facecolor": ALLEN["page1"],
+            "axes.facecolor": ALLEN["white"],
+            "axes.edgecolor": ALLEN["black"],
+            "axes.labelcolor": ALLEN["black"],
+            "axes.prop_cycle": cycler(color=ALLEN_SERIES),
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "axes.titlelocation": "left",
+            "font.family": [
+                "Allen Institute Text",
+                "Helvetica Neue",
+                "Arial",
+                "sans-serif",
+            ],
+            "grid.color": ALLEN["page2"],
+            "grid.linewidth": 0.9,
+            "savefig.facecolor": ALLEN["page1"],
+            "text.color": ALLEN["black"],
+            "xtick.color": ALLEN["gray2"],
+            "ytick.color": ALLEN["gray2"],
+        }
+    )
 
 
 def load_session_summary() -> pl.DataFrame:
@@ -167,264 +149,137 @@ def summarize_by_weekday(sessions: pl.DataFrame) -> pl.DataFrame:
     return summary
 
 
-def finite_or_nan(value: object) -> float:
-    if value is None:
-        return math.nan
-    number = float(value)
-    return number if math.isfinite(number) else math.nan
-
-
-def sem_or_zero(value: object) -> float:
-    if value is None:
-        return 0.0
-    number = float(value)
-    return number if math.isfinite(number) else 0.0
-
-
-def metric_series(summary: pl.DataFrame, metric: str) -> tuple[list[float], list[float]]:
-    means = [finite_or_nan(value) for value in summary[f"{metric}_mean"].to_list()]
-    sems = [sem_or_zero(value) for value in summary[f"{metric}_sem"].to_list()]
-    return means, sems
-
-
-def style_panel(ax: plt.Axes, metric: str, x: list[int], labels: list[str]) -> None:
-    meta = PLOT_META[metric]
-    ax.set_title(
-        str(meta["title"]),
-        loc="left",
-        fontsize=13,
-        fontweight="bold",
-        color=ALLEN["black"],
-        pad=12,
-    )
-    ax.set_ylabel(str(meta["ylabel"]), fontsize=10, color=ALLEN["black"])
+def format_axis(ax: plt.Axes, x: list[int], weekdays: list[str]) -> None:
     ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.grid(axis="y", linewidth=0.8)
+    ax.set_xticklabels([day.lower() for day in weekdays], fontsize=9)
+    ax.tick_params(axis="both", which="major", labelsize=9, length=0, pad=5)
+    ax.grid(axis="y")
     ax.set_axisbelow(True)
-    ax.yaxis.set_major_locator(MaxNLocator(nbins=4))
-
-    if meta["percent"]:
-        ax.set_ylim(0, 1)
-        ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
-
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(ALLEN["black"])
-        ax.spines[side].set_linewidth(1.0)
-
-    ax.tick_params(axis="x", labelsize=9, colors=ALLEN["gray2"], length=3)
-    ax.tick_params(axis="y", labelsize=9, colors=ALLEN["gray2"], length=3)
+    ax.spines["bottom"].set_color(ALLEN["black"])
+    ax.spines["left"].set_color(ALLEN["black"])
 
 
-def set_dprime_limits(ax: plt.Axes, means: list[float], sems: list[float]) -> None:
-    intervals = [
-        (mean - sem, mean + sem)
-        for mean, sem in zip(means, sems, strict=True)
-        if math.isfinite(mean)
-    ]
-    if not intervals:
-        return
-
-    low = min(interval[0] for interval in intervals)
-    high = max(interval[1] for interval in intervals)
-    span = high - low
-    pad = max(span * 0.16, 0.2)
-    bottom = min(0.0, low - pad)
-    top = high + pad
-    if math.isclose(bottom, top):
-        top = bottom + 1
-    ax.set_ylim(bottom, top)
-
-
-def annotate_best_day(
+def add_line_plot(
     ax: plt.Axes,
     x: list[int],
-    labels: list[str],
-    means: list[float],
-    sems: list[float],
-    metric: str,
+    mean: list[float],
+    sem: list[float],
+    color: str,
+    label: str,
 ) -> None:
-    finite_points = [
-        (idx, value)
-        for idx, value in enumerate(means)
-        if math.isfinite(value)
-    ]
-    if not finite_points:
-        return
-
-    meta = PLOT_META[metric]
-    point_idx, point_value = (
-        max(finite_points, key=lambda item: item[1])
-        if meta["higher_is_better"]
-        else min(finite_points, key=lambda item: item[1])
-    )
-    label_value = f"{point_value:.0%}" if meta["percent"] else f"{point_value:.2f}"
-    vertical_shift = sems[point_idx] if point_idx < len(sems) else 0
-
-    ax.scatter(
-        [x[point_idx]],
-        [point_value],
-        s=46,
-        color=ALLEN["green"],
-        edgecolor=ALLEN["black"],
-        linewidth=0.8,
-        zorder=4,
+    ax.errorbar(
+        x,
+        mean,
+        yerr=sem,
+        color=color,
+        ecolor=ALLEN["gray1"],
+        elinewidth=1.1,
+        capsize=3,
+        linewidth=2.4,
+        marker="o",
+        markersize=5.5,
+        markerfacecolor=ALLEN["white"],
+        markeredgecolor=color,
+        markeredgewidth=1.8,
     )
     ax.annotate(
-        f"{labels[point_idx]} {label_value}",
-        xy=(x[point_idx], point_value),
-        xytext=(10, 18 if meta["higher_is_better"] else -24),
+        label,
+        xy=(x[-1], mean[-1]),
+        xytext=(8, 0),
         textcoords="offset points",
-        fontsize=9,
+        ha="left",
+        va="center",
+        fontsize=9.5,
         fontweight="bold",
-        color=ALLEN["black"],
-        arrowprops={
-            "arrowstyle": "-",
-            "color": ALLEN["black"],
-            "lw": 0.9,
-            "shrinkA": 0,
-            "shrinkB": 5,
-        },
-        va="bottom" if meta["higher_is_better"] else "top",
+        color=color,
+        clip_on=False,
     )
-
-    if not meta["percent"] and vertical_shift:
-        y_bottom, y_top = ax.get_ylim()
-        ax.set_ylim(y_bottom, max(y_top, point_value + vertical_shift + 0.35))
+    ax.margins(x=0.16, y=0.18)
 
 
-def draw_metric(
+def add_bar_plot(
     ax: plt.Axes,
-    metric: str,
-    plot_type: str,
     x: list[int],
-    labels: list[str],
-    means: list[float],
-    sems: list[float],
+    mean: list[float],
+    sem: list[float],
+    color: str,
 ) -> None:
-    meta = PLOT_META[metric]
-    color = str(meta["color"])
-
-    if plot_type == "line":
-        ax.errorbar(
-            x,
-            means,
-            yerr=sems,
-            color=color,
-            marker="o",
-            markersize=5.5,
-            markerfacecolor=ALLEN["white"],
-            markeredgecolor=color,
-            markeredgewidth=1.6,
-            linewidth=2.4,
-            capsize=3,
-            elinewidth=1.1,
-            capthick=1.1,
-            zorder=3,
-        )
-    else:
-        ax.bar(
-            x,
-            means,
-            yerr=sems,
-            color=color,
-            edgecolor=ALLEN["black"],
-            linewidth=0.8,
-            width=0.68,
-            error_kw={
-                "ecolor": ALLEN["black"],
-                "elinewidth": 1.0,
-                "capsize": 3,
-                "capthick": 1.0,
-            },
-            zorder=3,
-        )
-        ax.axhline(0, color=ALLEN["black"], linewidth=1.0, zorder=2)
-        set_dprime_limits(ax, means, sems)
-
-    style_panel(ax, metric, x, labels)
-    annotate_best_day(ax, x, labels, means, sems, metric)
+    ax.bar(
+        x,
+        mean,
+        yerr=sem,
+        color=color,
+        edgecolor=ALLEN["black"],
+        linewidth=0.7,
+        error_kw={
+            "ecolor": ALLEN["gray2"],
+            "elinewidth": 1.1,
+            "capsize": 3,
+            "capthick": 1.1,
+        },
+        width=0.68,
+        alpha=0.92,
+    )
+    ax.margins(x=0.08, y=0.18)
 
 
 def make_plot(summary: pl.DataFrame) -> None:
+    apply_allen_style()
+
     x = list(range(summary.height))
-    labels = [str(label).lower() for label in summary["weekday"].to_list()]
-    total_sessions = int(summary["n_sessions"].sum())
+    weekdays = summary["weekday"].to_list()
+    n_sessions = int(summary["n_sessions"].sum())
 
-    fig = plt.figure(figsize=(10.8, 7.2), facecolor=ALLEN["white"])
-    gs = fig.add_gridspec(
-        2,
-        2,
-        height_ratios=[0.23, 1.0],
-        width_ratios=[0.035, 1.0],
-        left=0.06,
-        right=0.97,
-        bottom=0.08,
-        top=0.95,
-        hspace=0.06,
-        wspace=0.05,
+    fig, axes = plt.subplots(2, 2, figsize=(9.8, 7.2))
+    fig.subplots_adjust(
+        left=0.085,
+        right=0.95,
+        bottom=0.1,
+        top=0.81,
+        hspace=0.48,
+        wspace=0.32,
     )
-
-    rail_ax = fig.add_subplot(gs[:, 0])
-    title_ax = fig.add_subplot(gs[0, 1])
-    panel_grid = gs[1, 1].subgridspec(2, 2, hspace=0.52, wspace=0.32)
-    axes = [fig.add_subplot(panel_grid[row, col]) for row in range(2) for col in range(2)]
-
-    rail_ax.set_facecolor(ALLEN["blue"])
-    rail_ax.set_xticks([])
-    rail_ax.set_yticks([])
-    for spine in rail_ax.spines.values():
-        spine.set_visible(False)
-
-    title_ax.axis("off")
-    title_ax.text(
-        0.0,
-        0.72,
-        "allen institute/dynamic routing",
+    fig.suptitle(
+        "allen institute/dynamic routing behavior",
+        x=0.085,
+        y=0.965,
         ha="left",
-        va="center",
-        fontsize=21,
+        fontsize=20,
         fontweight="bold",
-        transform=title_ax.transAxes,
     )
-    title_ax.text(
-        0.0,
-        0.36,
-        "weekday behavioral performance summary",
+    fig.text(
+        0.085,
+        0.916,
+        f"weekday performance summary across {n_sessions:,} sessions",
         ha="left",
-        va="center",
-        fontsize=11,
+        fontsize=10.5,
         color=ALLEN["gray2"],
-        transform=title_ax.transAxes,
-    )
-    title_ax.text(
-        1.0,
-        0.36,
-        f"n={total_sessions} sessions",
-        ha="right",
-        va="center",
-        fontsize=10,
-        color=ALLEN["gray2"],
-        transform=title_ax.transAxes,
-    )
-    title_ax.plot(
-        [0.0, 0.16],
-        [0.08, 0.08],
-        color=ALLEN["orange"],
-        linewidth=5,
-        solid_capstyle="butt",
-        transform=title_ax.transAxes,
-        clip_on=False,
     )
 
-    for ax, (metric, plot_type) in zip(axes, PLOTS, strict=True):
-        means, sems = metric_series(summary, metric)
-        draw_metric(ax, metric, plot_type, x, labels, means, sems)
+    for ax, (metric, plot_type) in zip(axes.flat, PLOTS, strict=True):
+        mean = summary[f"{metric}_mean"].to_list()
+        sem = summary[f"{metric}_sem"].fill_null(0).to_list()
+        color = METRIC_COLORS[metric]
+        label = METRIC_LABELS[metric]
 
-    FIGURE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIGURE_PATH, dpi=180)
+        if plot_type == "line":
+            add_line_plot(ax, x, mean, sem, color, label)
+        else:
+            add_bar_plot(ax, x, mean, sem, color)
+
+        format_axis(ax, x, weekdays)
+        ax.set_title(f"{label}/", fontsize=12, fontweight="bold", pad=12)
+        ax.set_ylabel("mean +/- SEM", fontsize=9.5)
+
+    fig.text(
+        0.085,
+        0.035,
+        "source: dynamic routing performance parquet",
+        ha="left",
+        fontsize=8.5,
+        color=ALLEN["gray2"],
+    )
+    fig.savefig(FIGURE_PATH, dpi=180, bbox_inches="tight")
     plt.close(fig)
 
 
