@@ -66,6 +66,29 @@ These recipes are inferred from infographic samples in the cheat sheet, not stat
 
 **Text case (derived):** use all lowercase where possible, without capitalization of first letter. Proper nouns included. Do **not** rewrite or recase content where doing so would distort meaning, e.g. gene/protein symbols (e.g. `GFAP`, `Pvalb`), units (`mV`, `Hz`), acronyms with established casing (`ACC`, `MOs`). 
 
+## Layout and hierarchy (derived)
+
+Allen-branded scientific figures should feel open, deliberate, and strongly tiered. Color alone is not enough: leave enough white/page space that the reader can tell figure-level framing, subplot titles, axes, legends, and notes apart at a glance.
+
+- Reserve a clear title band above the plotting grid. Put only the figure title, subtitle, and optional dataset path there; never let this band share vertical space with subplot titles.
+- Make figure title/subtitle left-aligned and visually dominant. Use roughly 1.4-1.8x the subplot-title size for the figure title; keep the subtitle smaller and gray2.
+- Keep subplot titles short, local, and lower in hierarchy than the figure title. Add internal title padding (`pad=10-14` in Matplotlib) so subplot titles do not touch the axes frame or data.
+- Use explicit spacing for multi-panel figures. Start with top margin 0.80-0.86, inter-row spacing 0.35-0.55, and inter-column spacing 0.25-0.40; increase these before shrinking type.
+- Put legends outside the data area when possible, aligned to the top or right of the plot group. If a legend must sit inside an axis, give it an empty region and no opaque box unless contrast requires it.
+- Keep captions/notes below the grid or in a side rail. Do not tuck notes between subplot rows unless they are attached to one specific panel.
+- For dashboards and dense tables, create the same hierarchy: page header, section label, local panel title, control/legend text, then annotations. Use separators, whitespace, or page1/page2 bands before adding more color.
+
+Matplotlib starter for multi-panel spacing:
+
+```python
+fig, axs = plt.subplots(2, 2, figsize=(8, 6))
+fig.subplots_adjust(left=0.09, right=0.98, bottom=0.10, top=0.82, hspace=0.45, wspace=0.32)
+fig.suptitle("allen institute/cell types", x=0.09, y=0.97, ha="left", fontsize=18, fontweight="bold")
+fig.text(0.09, 0.925, "subtitle or cohort context", ha="left", fontsize=10.5, color=ALLEN["gray2"])
+for ax, title in zip(axs.flat, panel_titles):
+    ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
+```
+
 ## Motifs
 
 - `/` (forward slash) is used as a separator/it can also be used sparingly as a trailing slash for flair, for example on subsection or subplot titles (don't put a space before the slash)
