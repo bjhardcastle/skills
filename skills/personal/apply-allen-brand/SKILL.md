@@ -90,13 +90,36 @@ for ax, title in zip(axs.flat, panel_titles):
     ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
 ```
 
+## Multi-panel inner-axis cleanup (derived)
+
+For Matplotlib figures with repeated panels, clear the center gutter before shrinking type. Apply this only when the y variable, scale, and units match across the affected panels; otherwise keep concise per-panel y labels so the data meaning stays explicit.
+
+- Keep y-axis labels and y tick labels on the outer-left panels. Remove duplicate y labels and y tick labels from inner/right panels only when their units match the left panels.
+- Prefer one shared outer y label with `fig.supylabel(...)` or a left-side `fig.text(...)`; then set duplicate per-axis `ylabel` values to blank.
+- If units differ by panel, keep short local labels such as `rate (Hz)` or `voltage (mV)` and solve crowding with spacing, not omission.
+- Increase `wspace`, y-label `labelpad`, or the left margin before reducing tick or label size. For right-side panels with matching units, use `ax.tick_params(axis="y", labelleft=False)` after confirming the shared label still reads clearly.
+- In the final render, inspect the central gutter directly: no y tick labels, y labels, or left spines from right-hand panels should press into neighboring axes or subplot titles.
+
+```python
+fig, axs = plt.subplots(2, 2, figsize=(8, 6), sharey="row")
+fig.subplots_adjust(left=0.12, right=0.98, bottom=0.10, top=0.82, hspace=0.45, wspace=0.42)
+fig.supylabel("response (Hz)", x=0.03, fontsize=10.5)
+
+for ax in axs[:, 1:].flat:
+    ax.set_ylabel("")
+    ax.tick_params(axis="y", labelleft=False)
+
+for ax in axs[:, 0]:
+    ax.yaxis.labelpad = 8
+```
+
 ## Final render QA for plots (derived)
 
 Before handing off or saving a final visualization, inspect the rendered figure itself, not just the code. Make small spacing and label edits in this order so the result stays Allen-like: clear, spacious, and intentional without feeling conventional or loose.
 
 - Save or display a draft render at the final size. Check that the figure title, subtitle, and subplot titles do not collide or feel stacked too tightly. Add title-band space, `suptitle`/`fig.text` y-offset, or subplot title padding before reducing type.
 - Check every edge of the saved image for clipped tick labels, axis labels, legends, subtitles, captions, and slash-separated dataset names. Increase `left`, `right`, `bottom`, or `top` margins before shrinking labels.
-- Remove repeated axis labels in multi-panel plots only when the shared meaning remains obvious. For shared x/y axes, keep the outer row/column labels and remove interior duplicates; do not strip labels from standalone panels.
+- For multi-panel y axes, apply the inner-axis cleanup rule: remove duplicate inner/right y labels and y tick labels only when units match, use a shared outer y label when helpful, increase `wspace`/`labelpad` before shrinking type, and verify the central gutter is clear.
 - Keep legends, notes, thresholds, and annotations outside the data area whenever possible. If an annotation must be inside the axis, place it in unused space and verify it does not cover marks or error bars.
 - After changing spacing, inspect the plot again. Prefer margin and spacing adjustments over smaller type; reduce type only when the hierarchy still reads clearly at the final export size.
 
