@@ -79,35 +79,15 @@ Allen-branded scientific figures should feel open, deliberate, and strongly tier
 - Keep captions/notes below the grid or in a side rail. Do not tuck notes between subplot rows unless they are attached to one specific panel.
 - For dashboards and dense tables, create the same hierarchy: page header, section label, local panel title, control/legend text, then annotations. Use separators, whitespace, or page1/page2 bands before adding more color.
 
-Use a restrained figure-level structure accent to make spacious 2x2 figures feel Allen-branded without crowding the data:
-
-- Add a thin title rule under the figure title/subtitle band, spanning the plotting grid from the left margin to the right margin. Default to Allen blue; use orange, teal, or violet only when it matches the main analytic signal. Keep it 1.5-2.5 pt, square-ended, and in figure coordinates (`fig.transFigure`), never inside an axis.
-- Add subtle page2 divider hairlines through the gutters of multi-panel grids when the panels otherwise feel loose or conventional. Place dividers between axes using figure coordinates after layout is final, so they sit in whitespace and do not cross data marks, tick labels, axis labels, legends, or subplot titles.
-- Treat these as structural accents, not callouts. They should clarify figure grouping and hierarchy; they should not become direct labels, side rails, dense grids, or decorative frames around each panel.
-- Use either the title rule alone or title rule plus page2 gutter dividers. If the figure already uses page1/page2 bands, strong panel backgrounds, or prominent dividers, reduce or omit these accents.
-
 Matplotlib starter for multi-panel spacing:
 
 ```python
-from matplotlib.lines import Line2D
-
 fig, axs = plt.subplots(2, 2, figsize=(8, 6))
 fig.subplots_adjust(left=0.09, right=0.98, bottom=0.10, top=0.82, hspace=0.45, wspace=0.32)
 fig.suptitle("allen institute/cell types", x=0.09, y=0.97, ha="left", fontsize=18, fontweight="bold")
 fig.text(0.09, 0.925, "subtitle or cohort context", ha="left", fontsize=10.5, color=ALLEN["gray2"])
-fig.add_artist(Line2D([0.09, 0.98], [0.895, 0.895], transform=fig.transFigure, color=ALLEN["blue"], linewidth=2.0, solid_capstyle="butt", clip_on=False))
 for ax, title in zip(axs.flat, panel_titles):
     ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
-
-# optional page2 gutter dividers, after layout is set
-left_col = axs[0, 0].get_position()
-right_col = axs[0, 1].get_position()
-top_row = axs[0, 0].get_position()
-bottom_row = axs[1, 0].get_position()
-x_mid = (left_col.x1 + right_col.x0) / 2
-y_mid = (bottom_row.y1 + top_row.y0) / 2
-fig.add_artist(Line2D([x_mid, x_mid], [0.10, 0.82], transform=fig.transFigure, color=ALLEN["page2"], linewidth=0.8, clip_on=False))
-fig.add_artist(Line2D([0.09, 0.98], [y_mid, y_mid], transform=fig.transFigure, color=ALLEN["page2"], linewidth=0.8, clip_on=False))
 ```
 
 ## Multi-panel inner-axis cleanup (derived)
