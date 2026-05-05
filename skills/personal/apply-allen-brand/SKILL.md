@@ -36,8 +36,8 @@ preserve data meaning/apply visual language/
 
 Note: the PDF prints `#8246E1`, which is inconsistent with both its own RGB value and Pantone 266C — treated as a typo in the source document.
 
-**(derived)** Core series: `#6464FF, #FF6E00, #00A59B`; add `#8246FF` only when a fourth equal-weight category is truly needed.
-**(derived)** Highlights: `#FF6E00, #CDEB05, #FF00FF, #FFEB23, #CD0F55`; use as callouts, thresholds, selections, or short annotations, not as a full-strength categorical cycle.
+**(derived)** Series: `#6464FF, #FF6E00, #00A59B, #FF00FF, #CDEB05,  #CD0F55, #8246FF,  #DC9600, #FFEB23`
+**(derived)** Highlights: `#FF6E00, #CDEB05, #FF00FF, #FFEB23, #CD0F55`
 **(derived)** Neutrals: background `#FFFFFF/#F3F0E8`; panel `#FFFFFF/#F3F0E8/#DED9D1`; grid `#DED9D1/#AAA39F`; axis `#000000/#737373`; labels `#000000`; muted `#737373`.
 
 base palette is for backgrounds and factual content/primary and accent palettes add flair/primary also used for backgrounds/
@@ -46,12 +46,10 @@ base palette is for backgrounds and factual content/primary and accent palettes 
 
 These recipes are inferred from infographic samples in the cheat sheet, not stated as rules.
 
-- Think in color roles, not in palette sampling. Most scientific plots should use neutrals plus one main signal, then one or two deliberate highlights.
 - Analytical background: `white` or `page1`; structure: `page2`, `gray1`, or low-opacity `gray2`; text/axes: `black`.
-- Main signal: `blue`. Comparison/selection: `orange`. Second independent category: `teal`. Brand-forward three-series combo: `blue` + `violet` + `orange`.
-- Do not cycle through every Allen accent for many equal-weight series. If there are more than 3-4 categories, prefer small multiples, direct labels, marker/line-style variation, or muted gray traces with 1-2 named series in full color.
-- Accents should explain where to look. Use green, rose, yellow, and maroon for thresholds, callouts, selected points, intervention bands, warnings, or brief annotations; keep their filled area small so they do not overpower the data.
-- Use maroon only for adverse/alert meaning.
+- Main signal: `blue` and `orange`. Accents mark highlights, thresholds, selections, callouts, or secondary series.
+- Use strong accents sparingly. Use maroon for adverse/alert meaning.
+- Two-series comparison: `teal` + `orange`; brand-forward combo: `blue` + `violet` + `orange`.
 - Dark treatment: `black` background, `white` labels, one or two strong accents.
 - Primary-field treatment: `blue` or `violet` background, `white` type, accent highlight (the PDF shows a "headline reversed out of gradation for legibility" treatment as precedent).
 
@@ -105,9 +103,8 @@ for ax, title in zip(axs.flat, panel_titles):
 
 ```python
 ALLEN={"black":"#000000","white":"#FFFFFF","page1":"#F3F0E8","page2":"#DED9D1","gray1":"#AAA39F","gray2":"#737373","blue":"#6464FF","orange":"#FF6E00","green":"#CDEB05","rose":"#FF00FF","maroon":"#CD0F55","teal":"#00A59B","violet":"#8246FF","ochre":"#DC9600","yellow":"#FFEB23"}
-ALLEN_CORE_SERIES=[ALLEN[k] for k in ["blue","orange","teal"]]
-ALLEN_HIGHLIGHTS=[ALLEN[k] for k in ["orange","green","rose","yellow","maroon"]]
-plt.rcParams.update({"figure.facecolor":ALLEN["white"],"axes.facecolor":ALLEN["white"],"axes.edgecolor":ALLEN["black"],"axes.labelcolor":ALLEN["black"],"xtick.color":ALLEN["gray2"],"ytick.color":ALLEN["gray2"],"grid.color":ALLEN["page2"],"text.color":ALLEN["black"],"axes.prop_cycle":cycler(color=ALLEN_CORE_SERIES),"font.family":["Allen Institute Text","Helvetica Neue","Arial","sans-serif"]})
+ALLEN_SERIES=[ALLEN[k] for k in ["blue","orange","teal","violet","green","rose","maroon","ochre","yellow"]]
+plt.rcParams.update({"figure.facecolor":ALLEN["white"],"axes.facecolor":ALLEN["white"],"axes.edgecolor":ALLEN["black"],"axes.labelcolor":ALLEN["black"],"xtick.color":ALLEN["gray2"],"ytick.color":ALLEN["gray2"],"grid.color":ALLEN["page2"],"text.color":ALLEN["black"],"axes.prop_cycle":cycler(color=ALLEN_SERIES),"font.family":["Allen Institute Text","Helvetica Neue","Arial","sans-serif"]})
 ```
 
 ```css
