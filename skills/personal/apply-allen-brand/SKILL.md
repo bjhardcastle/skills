@@ -58,7 +58,7 @@ These recipes are inferred from infographic samples in the cheat sheet, not stat
 - Use Allen Institute fonts when available. The family ships in roman and italic, in light/medium/bold (plus light-italic, regular-italic, bold-italic), with two editions: text and headline.
 - Text edition is for below 24 pt. Do not alter its letter spacing — wider spacing is intentional for legibility.
 - Headline edition is for above 24 pt. Letter-space tightly.
-- For Matplotlib, resolve the first installed family to one concrete `font.family` value before plotting. Prefer Allen fonts when present, then `Arial`, `Segoe UI`, `Bahnschrift`, `Calibri`, and finally `DejaVu Sans`; this avoids generic fallback warnings while preserving the closest available brand-like sans.
+- For Matplotlib, resolve two concrete font variables before plotting: `TITLE_FONT` for figure titles, subplot titles, and callouts; `TEXT_FONT` for axes, ticks, legends, labels, captions, and table text. Prefer Allen fonts when present. If they are absent, give titles a less-default installed display-ish sans (`Bahnschrift`, then `Segoe UI`) while keeping readable text on `Arial`, `Segoe UI`, `Calibri`, then `DejaVu Sans`.
 - CSS/web fallback: `"Allen Institute Text", "Allen Institute", "Helvetica Neue", Arial, sans-serif`.
 
 **(derived)** Type role mapping for plots:
@@ -141,8 +141,11 @@ from matplotlib import font_manager
 ALLEN={"black":"#000000","white":"#FFFFFF","page1":"#F3F0E8","page2":"#DED9D1","gray1":"#AAA39F","gray2":"#737373","blue":"#6464FF","orange":"#FF6E00","green":"#CDEB05","rose":"#FF00FF","maroon":"#CD0F55","teal":"#00A59B","violet":"#8246FF","ochre":"#DC9600","yellow":"#FFEB23"}
 ALLEN_SERIES=[ALLEN[k] for k in ["blue","orange","teal","violet","green","rose","maroon","ochre","yellow"]]
 INSTALLED_FONTS={f.name for f in font_manager.fontManager.ttflist}
-ALLEN_FONT=next((f for f in ["Allen Institute Text","Allen Institute","Arial","Segoe UI","Bahnschrift","Calibri","DejaVu Sans"] if f in INSTALLED_FONTS),"DejaVu Sans")
-plt.rcParams.update({"figure.facecolor":ALLEN["white"],"axes.facecolor":ALLEN["white"],"axes.edgecolor":ALLEN["black"],"axes.labelcolor":ALLEN["black"],"xtick.color":ALLEN["gray2"],"ytick.color":ALLEN["gray2"],"grid.color":ALLEN["page2"],"text.color":ALLEN["black"],"axes.prop_cycle":cycler(color=ALLEN_SERIES),"font.family":ALLEN_FONT})
+resolve_font=lambda candidates: next((f for f in candidates if f in INSTALLED_FONTS),"DejaVu Sans")
+TITLE_FONT=resolve_font(["Allen Institute Headline","Allen Institute","Bahnschrift","Segoe UI","Arial","Calibri","DejaVu Sans"])
+TEXT_FONT=resolve_font(["Allen Institute Text","Allen Institute","Arial","Segoe UI","Calibri","DejaVu Sans"])
+plt.rcParams.update({"figure.facecolor":ALLEN["white"],"axes.facecolor":ALLEN["white"],"axes.edgecolor":ALLEN["black"],"axes.labelcolor":ALLEN["black"],"xtick.color":ALLEN["gray2"],"ytick.color":ALLEN["gray2"],"grid.color":ALLEN["page2"],"text.color":ALLEN["black"],"axes.prop_cycle":cycler(color=ALLEN_SERIES),"font.family":TEXT_FONT})
+# Use fontfamily=TITLE_FONT on fig.suptitle(...), ax.set_title(...), and callout text.
 ```
 
 ```css
