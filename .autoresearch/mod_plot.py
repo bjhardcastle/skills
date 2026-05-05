@@ -7,6 +7,7 @@
 # ///
 from __future__ import annotations
 
+from math import isfinite
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -21,14 +22,6 @@ SOURCE = Path(
 )
 OUT_DIR = Path(__file__).resolve().parent
 FIGURE_PATH = OUT_DIR / "plot.png"
-
-PLOTS = (
-    ("hit_rate", "line"),
-    ("false_alarm_rate", "line"),
-    ("vis_dprime", "bar"),
-    ("aud_dprime", "bar"),
-)
-METRICS = tuple(metric for metric, _ in PLOTS)
 
 ALLEN = {
     "black": "#000000",
@@ -49,18 +42,16 @@ ALLEN = {
 }
 ALLEN_SERIES = [
     ALLEN[key]
-    for key in (
-        "blue",
-        "orange",
-        "teal",
-        "violet",
-        "green",
-        "rose",
-        "maroon",
-        "ochre",
-        "yellow",
-    )
+    for key in ("blue", "orange", "teal", "violet", "green", "rose", "maroon")
 ]
+
+PLOTS = (
+    ("hit_rate", "line"),
+    ("false_alarm_rate", "line"),
+    ("vis_dprime", "bar"),
+    ("aud_dprime", "bar"),
+)
+METRICS = tuple(metric for metric, _ in PLOTS)
 METRIC_LABELS = {
     "hit_rate": "hit rate",
     "false_alarm_rate": "false alarm rate",
@@ -95,27 +86,22 @@ def resolve_font() -> str:
     )
 
 
-def apply_allen_style() -> None:
-    plt.rcParams.update(
-        {
-            "figure.facecolor": ALLEN["white"],
-            "axes.facecolor": ALLEN["white"],
-            "axes.edgecolor": ALLEN["black"],
-            "axes.labelcolor": ALLEN["black"],
-            "axes.linewidth": 0.9,
-            "axes.prop_cycle": cycler(color=ALLEN_SERIES),
-            "font.family": resolve_font(),
-            "font.size": 10,
-            "grid.color": ALLEN["page2"],
-            "grid.linewidth": 0.8,
-            "legend.frameon": False,
-            "savefig.facecolor": ALLEN["white"],
-            "savefig.bbox": "tight",
-            "text.color": ALLEN["black"],
-            "xtick.color": ALLEN["gray2"],
-            "ytick.color": ALLEN["gray2"],
-        }
-    )
+plt.rcParams.update(
+    {
+        "figure.facecolor": ALLEN["white"],
+        "axes.facecolor": ALLEN["white"],
+        "axes.edgecolor": ALLEN["black"],
+        "axes.labelcolor": ALLEN["black"],
+        "axes.prop_cycle": cycler(color=ALLEN_SERIES),
+        "font.family": resolve_font(),
+        "grid.color": ALLEN["page2"],
+        "grid.linewidth": 0.9,
+        "savefig.facecolor": ALLEN["white"],
+        "text.color": ALLEN["black"],
+        "xtick.color": ALLEN["gray2"],
+        "ytick.color": ALLEN["gray2"],
+    }
+)
 
 
 def load_session_summary() -> pl.DataFrame:
@@ -170,70 +156,84 @@ def summarize_by_weekday(sessions: pl.DataFrame) -> pl.DataFrame:
     return summary
 
 
-def style_axis(ax: plt.Axes, metric: str, weekdays: list[str]) -> None:
-    ax.set_title(
-        f"{METRIC_LABELS[metric]}/",
-        loc="left",
-        fontsize=11,
-        fontweight="bold",
-        pad=12,
-    )
-    ax.set_xticks(range(len(weekdays)))
-    ax.set_xticklabels([weekday.lower() for weekday in weekdays])
-    ax.set_ylabel("mean +/- SEM", fontsize=9.5)
+def clean_values(values: list[float | None], *, null_value: float) -> list[float]:
+    return [null_value if value is None else float(value) for value in values]
+
+
+def set_metric_limits(ax: plt.Axes, metric: str, means: list[float], sems: list[float]) -> None:
+    if metric in {"hit_rate", "false_alarm_rate"}:
+        ax.set_ylim(0, 1)
+        return
+
+    lows = [mean - sem for mean, sem in zip(means, sems, strict=True)]
+    highs = [mean + sem for mean, sem in zip(means, sems, strict=True)]
+    finite_lows = [value for value in lows if isfinite(value)]
+    finite_highs = [value for value in highs if isfinite(value)]
+    if not finite_lows or not finite_highs:
+        return
+
+    lower = min(0, min(finite_lows))
+    upper = max(finite_highs)
+    pad = max((upper - lower) * 0.15, 0.2)
+    ax.set_ylim(lower - pad, upper + pad)
+
+
+def style_axis(ax: plt.Axes, metric: str, x: list[int], weekdays: list[str]) -> None:
+    ax.set_title(METRIC_LABELS[metric], loc="left", fontsize=12, fontweight="bold", pad=12)
+    ax.set_ylabel("session mean", fontsize=9.5, labelpad=8)
+    ax.set_xticks(x, weekdays)
     ax.grid(axis="y")
     ax.grid(axis="x", visible=False)
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["left"].set_color(ALLEN["gray1"])
-    ax.spines["bottom"].set_color(ALLEN["gray1"])
-    ax.tick_params(axis="both", length=3, width=0.8, labelsize=8.5)
+    ax.tick_params(axis="both", labelsize=9, length=0)
+
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    ax.spines["left"].set_color(ALLEN["black"])
+    ax.spines["bottom"].set_color(ALLEN["black"])
 
 
 def make_plot(summary: pl.DataFrame) -> None:
-    apply_allen_style()
-
     x = list(range(summary.height))
-    weekdays = summary["weekday"].to_list()
-    fig, axes = plt.subplots(2, 2, figsize=(8, 6), sharex=True)
+    weekdays = [weekday.lower() for weekday in summary["weekday"].to_list()]
+    fig, axes = plt.subplots(2, 2, figsize=(9.4, 6.8), sharex=True)
     fig.subplots_adjust(
-        left=0.11,
+        left=0.10,
         right=0.98,
-        bottom=0.13,
-        top=0.81,
-        hspace=0.42,
-        wspace=0.30,
+        bottom=0.12,
+        top=0.78,
+        hspace=0.48,
+        wspace=0.32,
     )
-
     fig.suptitle(
-        "allen institute/dynamic routing",
-        x=0.11,
-        y=0.97,
+        "dynamic routing/weekday behavior",
+        x=0.10,
+        y=0.96,
         ha="left",
-        fontsize=18,
+        fontsize=20,
         fontweight="bold",
     )
     fig.text(
-        0.11,
-        0.925,
-        "behavior performance by weekday",
+        0.10,
+        0.905,
+        "session mean +/- SEM across behavior sessions",
         ha="left",
         fontsize=10.5,
         color=ALLEN["gray2"],
     )
-    fig.text(
-        0.98,
-        0.925,
-        f"{int(summary['n_sessions'].sum())} sessions",
-        ha="right",
-        fontsize=10.5,
-        color=ALLEN["gray2"],
+    fig.add_artist(
+        Line2D(
+            [0.10, 0.98],
+            [0.835, 0.835],
+            transform=fig.transFigure,
+            color=ALLEN["blue"],
+            linewidth=2.5,
+            solid_capstyle="butt",
+        )
     )
-    fig.supxlabel("weekday", x=0.545, y=0.045, fontsize=10.5)
 
     for ax, (metric, plot_type) in zip(axes.flat, PLOTS, strict=True):
-        means = summary[f"{metric}_mean"].to_list()
-        sems = summary[f"{metric}_sem"].fill_null(0).to_list()
+        means = clean_values(summary[f"{metric}_mean"].to_list(), null_value=float("nan"))
+        sems = clean_values(summary[f"{metric}_sem"].to_list(), null_value=0)
         color = METRIC_COLORS[metric]
 
         if plot_type == "line":
@@ -242,15 +242,14 @@ def make_plot(summary: pl.DataFrame) -> None:
                 means,
                 yerr=sems,
                 color=color,
-                ecolor=ALLEN["gray1"],
-                elinewidth=1.0,
-                capsize=3,
-                linewidth=2.1,
                 marker="o",
                 markersize=5.5,
                 markerfacecolor=ALLEN["white"],
                 markeredgecolor=color,
                 markeredgewidth=1.5,
+                linewidth=2.4,
+                elinewidth=1.3,
+                capsize=3,
             )
         else:
             ax.bar(
@@ -261,36 +260,22 @@ def make_plot(summary: pl.DataFrame) -> None:
                 edgecolor=ALLEN["black"],
                 linewidth=0.8,
                 error_kw={
-                    "ecolor": ALLEN["gray2"],
-                    "elinewidth": 1.0,
+                    "ecolor": ALLEN["black"],
+                    "elinewidth": 1.2,
                     "capsize": 3,
-                    "capthick": 1.0,
+                    "capthick": 1.2,
                 },
-                width=0.64,
             )
 
-        style_axis(ax, metric, weekdays)
+        set_metric_limits(ax, metric, means, sems)
+        style_axis(ax, metric, x, weekdays)
 
-    fig.add_artist(
-        Line2D(
-            [0.11, 0.98],
-            [0.475, 0.475],
-            transform=fig.transFigure,
-            color=ALLEN["page2"],
-            lw=0.8,
-        )
-    )
-    fig.add_artist(
-        Line2D(
-            [0.545, 0.545],
-            [0.13, 0.81],
-            transform=fig.transFigure,
-            color=ALLEN["page2"],
-            lw=0.8,
-        )
-    )
+    for ax in axes[0, :]:
+        ax.tick_params(axis="x", labelbottom=False)
+    for ax in axes[1, :]:
+        ax.set_xlabel("weekday", fontsize=9.5, labelpad=8)
 
-    fig.savefig(FIGURE_PATH, dpi=200)
+    fig.savefig(FIGURE_PATH, dpi=180, bbox_inches="tight")
     plt.close(fig)
 
 
