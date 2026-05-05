@@ -89,17 +89,15 @@ for ax, title in zip(axs.flat, panel_titles):
     ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
 ```
 
-## Allen motifs and composition accents (derived)
+## Motifs
 
-Use motifs to make scientific visuals recognizably Allen, not decorative. Pick one primary motif and at most one supporting motif per figure; keep data marks, axes, labels, and uncertainty bands simpler than the accent.
-
-- **Slash rules:** use `/` for dataset, program, or group paths, e.g. `allen institute/brain science/cell types`, or as a restrained trailing mark on section/subplot titles. Keep the slash flush against text, never start a line with it, and avoid slash flair near units or ratios; write `mV per mm`, `3:1`, or `mean +/- sd`.
-- **Side rails:** reserve a narrow left or right rail for dataset path, cohort filters, legends, panel letters, or notes. Use white/page1/page2 fill with one 2-4 px blue, violet, orange, or black rule. Keep the plotting area outside the rail and align rail content with the title band or subplot grid.
-- **Lens/circle crops:** use circular crops, circular insets, or outlined lens callouts for microscope images, cell examples, anatomical regions, or a selected data cluster. Use a bold Allen color stroke and a short label; never cover the data point or image region the reader needs to inspect.
-- **Dot grids:** use small, regular dot grids as background texture in empty margin, title bands, side rails, or inactive dashboard regions. Use page2/gray1 at low contrast; never place dot texture behind dense scatterplots, heatmaps, or small labels.
-- **Bold callouts:** pair a large number, threshold, cluster name, or short finding with a color bar/rule and compact explanatory text. Use callouts to summarize the result beside the plot, not to replace axis labels, legends, sample sizes, or statistical annotations.
-- **Image treatment:** for people, science, or place imagery, crop dynamically within the frame, increase contrast, and optionally apply luminance or Allen-color treatment for generalized themes. Leave raw scientific imagery unfiltered when color intensity or morphology is evidence.
-- **Icon library (supplemental, not in cheat sheet):** when icons are required, source them from https://fonts.google.com/icons. Prefer Outlined or Rounded styles at consistent weight and optical size, and apply Allen palette tokens instead of default fills.
+- `/` (forward slash) is used as a separator/it can also be used sparingly as a trailing slash for flair, for example on subsection or subplot titles (don't put a space before the slash)
+- (derived) never start a line of text with a slash
+- (derived) when using forward slashes for flair, it's confusing to also use them in the same context for units or for ratios: instead use `mV per mm` or `3:1`
+- **separator for hierarchical dataset/group name components.** dataset, program, or group name separation e.g. `allen institute/brain science/cell types`. Works well with chart titles, dashboard headers, slide section dividers, and figure captions where the dataset itself is the subject. Keep the slash flush against the name (no space) and lowercase the name unless it contains a symbol that requires exact casing.
+- **Icon library (supplemental, not in cheat sheet).** When icons are required, source them from https://fonts.google.com/icons. Prefer the Outlined or Rounded styles at consistent weight and optical size, and apply Allen palette tokens for color rather than the default fills.
+- Images: people, science, place. Always cropped and positioned dynamically within the frame, with increased contrast. Treat graphically with luminance or colorization for generalized themes.
+- **(derived)** Composition: clean dividers, bold hierarchy, dot grids, big numbers, circles, slashes, high-contrast overlays.
 
 ## Suggested starter tokens
 
