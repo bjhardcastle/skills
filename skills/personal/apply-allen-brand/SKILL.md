@@ -14,14 +14,6 @@ Sections marked **(derived)** are guidance inferred from the cheat sheet's examp
 
 preserve data meaning/apply visual language/
 
-## Priority Order for Plots
-
-1. Preserve the data meaning.
-2. Establish Allen palette and neutrals.
-3. Build a left-aligned slash hierarchy.
-4. Protect layout spacing and prevent collisions.
-5. Add optional motifs only when they do not reduce readability.
-
 ## Palette
 
 | Group | Token | RGB | Hex | Pantone | CMYK |
