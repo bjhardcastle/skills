@@ -69,38 +69,25 @@ These recipes are inferred from infographic samples in the cheat sheet, not stat
 
 ## Layout and hierarchy (derived)
 
-Allen-branded scientific figures should feel precise, modular, and intentionally tiered. For 2x2 scientific figures, use a compact small-multiple composition: one clean title band, aligned panel titles, shared axis labels, subtle figure-level rules, and no side rails or dense direct labels competing with the axes.
+Allen-branded scientific figures should feel open, deliberate, and strongly tiered. Color alone is not enough: leave enough white/page space that the reader can tell figure-level framing, subplot titles, axes, legends, and notes apart at a glance.
 
-- Reserve a title band above the plotting grid. Put only the figure title, subtitle, and optional dataset path there; keep subplot titles inside the grid area and visually secondary.
-- Left-align the title band to the plot grid, not the page edge. Use roughly 1.5-1.7x the subplot-title size for the figure title; keep the subtitle smaller and gray2.
-- For small multiples, prefer shared labels over repeated labels only when the unit/scale is genuinely common. Share x labels for common categories; share y labels only when all panels use the same measurement.
-- Align all subplot titles to the left edge of their axes. Keep them short, use consistent padding (`pad=8-10` in Matplotlib), and avoid trailing notes in title text.
-- Tighten spacing enough for a composed figure, while leaving labels and ticks safe: start with top `0.80-0.83`, `hspace=0.30-0.38`, and `wspace=0.22-0.30` for 2x2 grids.
-- Add subtle dividers between rows/columns when the figure needs branded structure. Use page2 or low-opacity gray1; keep rules outside the data area and lighter than axes.
-- Put legends above the grid or just outside the plot group, aligned to the title/grid edge. If a legend must sit inside an axis, give it a quiet empty region and avoid opaque boxes unless contrast requires it.
-- Keep captions/notes below the grid. Avoid left rails that compete with y axes, crowded right annotations, and direct labels that collide across panels.
+- Reserve a clear title band above the plotting grid. Put only the figure title, subtitle, and optional dataset path there; never let this band share vertical space with subplot titles.
+- Make figure title/subtitle left-aligned and visually dominant. Use roughly 1.4-1.8x the subplot-title size for the figure title; keep the subtitle smaller and gray2.
+- Keep subplot titles short, local, and lower in hierarchy than the figure title. Add internal title padding (`pad=10-14` in Matplotlib) so subplot titles do not touch the axes frame or data.
+- Use explicit spacing for multi-panel figures. Start with top margin 0.80-0.86, inter-row spacing 0.35-0.55, and inter-column spacing 0.25-0.40; increase these before shrinking type.
+- Put legends outside the data area when possible, aligned to the top or right of the plot group. If a legend must sit inside an axis, give it an empty region and no opaque box unless contrast requires it.
+- Keep captions/notes below the grid or in a side rail. Do not tuck notes between subplot rows unless they are attached to one specific panel.
 - For dashboards and dense tables, create the same hierarchy: page header, section label, local panel title, control/legend text, then annotations. Use separators, whitespace, or page1/page2 bands before adding more color.
 
-Matplotlib starter for compact 2x2 small multiples:
+Matplotlib starter for multi-panel spacing:
 
 ```python
-from matplotlib.lines import Line2D
-
-fig, axs = plt.subplots(2, 2, figsize=(8, 6), sharex=True)
-fig.subplots_adjust(left=0.11, right=0.98, bottom=0.13, top=0.81, hspace=0.34, wspace=0.26)
-
-fig.suptitle("allen institute/cell types", x=0.11, y=0.97, ha="left", fontsize=18, fontweight="bold")
-fig.text(0.11, 0.925, "subtitle or cohort context", ha="left", fontsize=10.5, color=ALLEN["gray2"])
-fig.supxlabel("shared x label", x=0.545, y=0.045, fontsize=10.5)
-fig.supylabel("shared y label, only if common", x=0.035, y=0.47, fontsize=10.5)
-
+fig, axs = plt.subplots(2, 2, figsize=(8, 6))
+fig.subplots_adjust(left=0.09, right=0.98, bottom=0.10, top=0.82, hspace=0.45, wspace=0.32)
+fig.suptitle("allen institute/cell types", x=0.09, y=0.97, ha="left", fontsize=18, fontweight="bold")
+fig.text(0.09, 0.925, "subtitle or cohort context", ha="left", fontsize=10.5, color=ALLEN["gray2"])
 for ax, title in zip(axs.flat, panel_titles):
-    ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=9)
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-
-fig.add_artist(Line2D([0.11, 0.98], [0.475, 0.475], transform=fig.transFigure, color=ALLEN["page2"], lw=0.8))
-fig.add_artist(Line2D([0.545, 0.545], [0.13, 0.81], transform=fig.transFigure, color=ALLEN["page2"], lw=0.8))
+    ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
 ```
 
 ## Motifs
