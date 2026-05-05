@@ -12,7 +12,7 @@ Sections marked **(derived)** are guidance inferred from the cheat sheet's examp
 
 ## Goal
 
-preserve data meaning/apply visual language/
+Create scientifically accurate plots first, then express Allen Institute visual language through the palette, lowercase slash hierarchy, deliberate spacing, and restrained accents.
 
 ## Palette
 
