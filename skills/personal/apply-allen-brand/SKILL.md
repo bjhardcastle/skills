@@ -78,56 +78,15 @@ Allen-branded scientific figures should feel open, deliberate, and strongly tier
 - Keep captions/notes below the grid or in a side rail. Do not tuck notes between subplot rows unless they are attached to one specific panel.
 - For dashboards and dense tables, create the same hierarchy: page header, section label, local panel title, control/legend text, then annotations. Use separators, whitespace, or page1/page2 bands before adding more color.
 
-Matplotlib composition recipe (derived):
-
-When a scientific plot feels clean but generic, add Allen structure outside the data region: a reserved title band, one narrow color rail, direct labels near line ends, and one numeric callout anchored to the evidence. Keep the plot area calm; put brand energy in framing, hierarchy, and one useful annotation.
+Matplotlib starter for multi-panel spacing:
 
 ```python
-fig = plt.figure(figsize=(8, 5.2), facecolor=ALLEN["white"])
-gs = fig.add_gridspec(
-    2, 2,
-    height_ratios=[0.22, 1],
-    width_ratios=[0.035, 1],
-    left=0.08, right=0.97, bottom=0.12, top=0.95,
-    hspace=0.04, wspace=0.05,
-)
-
-title_ax = fig.add_subplot(gs[0, 1])
-rail_ax = fig.add_subplot(gs[:, 0])
-ax = fig.add_subplot(gs[1, 1])
-
-title_ax.axis("off")
-title_ax.text(0, 0.74, "allen institute/cell types", ha="left",
-              fontsize=18, fontweight="bold")
-title_ax.text(0, 0.28, "mean firing rate by cortical layer", ha="left",
-              fontsize=10.5, color=ALLEN["gray2"])
-title_ax.plot([0, 0.16], [0.04, 0.04], color=ALLEN["orange"], lw=4,
-              solid_capstyle="butt")  # small slash/rule accent, not ornament
-
-rail_ax.set_facecolor(ALLEN["blue"])
-rail_ax.set_xticks([]); rail_ax.set_yticks([])
-for spine in rail_ax.spines.values():
-    spine.set_visible(False)
-
-ax.plot(x, y_a, lw=2.4, color=ALLEN["blue"])
-ax.plot(x, y_b, lw=2.4, color=ALLEN["orange"])
-ax.grid(axis="y", linewidth=0.8, alpha=0.8)
-ax.spines[["top", "right"]].set_visible(False)
-ax.set_xlabel("depth from pia (um)")
-ax.set_ylabel("firing rate (Hz)")
-
-# Direct labels avoid a legend box and make the brand colors carry meaning.
-ax.text(x[-1] + 0.2, y_a[-1], "pyramidal", color=ALLEN["blue"],
-        va="center", fontweight="bold")
-ax.text(x[-1] + 0.2, y_b[-1], "interneuron", color=ALLEN["orange"],
-        va="center", fontweight="bold")
-
-peak_i = int(np.argmax(y_a))
-ax.scatter([x[peak_i]], [y_a[peak_i]], s=42, color=ALLEN["green"],
-           edgecolor=ALLEN["black"], linewidth=0.8, zorder=3)
-ax.annotate("1.8x", xy=(x[peak_i], y_a[peak_i]), xytext=(18, 22),
-            textcoords="offset points", fontsize=16, fontweight="bold",
-            arrowprops={"arrowstyle": "-", "color": ALLEN["black"], "lw": 1})
+fig, axs = plt.subplots(2, 2, figsize=(8, 6))
+fig.subplots_adjust(left=0.09, right=0.98, bottom=0.10, top=0.82, hspace=0.45, wspace=0.32)
+fig.suptitle("allen institute/cell types", x=0.09, y=0.97, ha="left", fontsize=18, fontweight="bold")
+fig.text(0.09, 0.925, "subtitle or cohort context", ha="left", fontsize=10.5, color=ALLEN["gray2"])
+for ax, title in zip(axs.flat, panel_titles):
+    ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
 ```
 
 ## Motifs
