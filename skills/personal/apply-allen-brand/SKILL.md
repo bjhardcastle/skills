@@ -78,6 +78,16 @@ Allen-branded scientific figures should feel open, deliberate, and strongly tier
 - Keep captions/notes below the grid or in a side rail. Do not tuck notes between subplot rows unless they are attached to one specific panel.
 - For dashboards and dense tables, create the same hierarchy: page header, section label, local panel title, control/legend text, then annotations. Use separators, whitespace, or page1/page2 bands before adding more color.
 
+## Direct labels over legends (derived)
+
+For multi-panel scientific plots, prefer direct labeling when each panel has a small number of series. This is more renderable than relying on Allen fonts: it removes legend boxes, keeps the composition open, and lets color do useful work without adding another visual block.
+
+- Replace legends with color-matched text near line endpoints, bar ends, or representative marks. Use a neutral label only when color is already carrying a different meaning.
+- Place labels in existing whitespace. Keep them at least 4-8 pt away from axis labels, tick labels, subplot titles, and neighboring data; expand limits or margins before crowding the axes.
+- Put endpoint labels just beyond the final visible point when the right side is open. If the endpoint is crowded, move the label to the nearest quiet interior whitespace and use a thin gray1 leader line only when necessary.
+- Do not put labels in boxes, pills, or opaque legend frames. If a shared legend is unavoidable, keep it unboxed and outside the plot grid.
+- Preserve open composition: direct labels should reduce furniture, not create a new annotation cluster.
+
 Matplotlib starter for multi-panel spacing:
 
 ```python
@@ -87,6 +97,31 @@ fig.suptitle("allen institute/cell types", x=0.09, y=0.97, ha="left", fontsize=1
 fig.text(0.09, 0.925, "subtitle or cohort context", ha="left", fontsize=10.5, color=ALLEN["gray2"])
 for ax, title in zip(axs.flat, panel_titles):
     ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=12)
+```
+
+Matplotlib endpoint labels:
+
+```python
+def label_line_end(ax, x, y, text, color, dx=6, dy=0):
+    ax.annotate(
+        text,
+        xy=(x[-1], y[-1]),
+        xytext=(dx, dy),
+        textcoords="offset points",
+        ha="left",
+        va="center",
+        color=color,
+        fontsize=9,
+        clip_on=False,
+    )
+
+for ax in axs.flat:
+    for line in ax.lines:
+        label_line_end(ax, line.get_xdata(), line.get_ydata(), line.get_label(), line.get_color())
+    legend = ax.get_legend()
+    if legend:
+        legend.remove()
+    ax.margins(x=0.08)
 ```
 
 ## Motifs
