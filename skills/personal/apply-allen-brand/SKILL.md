@@ -58,7 +58,8 @@ These recipes are inferred from infographic samples in the cheat sheet, not stat
 - Use Allen Institute fonts when available. The family ships in roman and italic, in light/medium/bold (plus light-italic, regular-italic, bold-italic), with two editions: text and headline.
 - Text edition is for below 24 pt. Do not alter its letter spacing — wider spacing is intentional for legibility.
 - Headline edition is for above 24 pt. Letter-space tightly.
-- Fallback: `"Allen Institute Text", "Allen Institute", "Helvetica Neue", Arial, sans-serif`.
+- For Matplotlib, resolve the first installed family to one concrete `font.family` value before plotting. Prefer Allen fonts when present, then `Arial`, `Segoe UI`, `Bahnschrift`, `Calibri`, and finally `DejaVu Sans`; this avoids generic fallback warnings while preserving the closest available brand-like sans.
+- CSS/web fallback: `"Allen Institute Text", "Allen Institute", "Helvetica Neue", Arial, sans-serif`.
 
 **(derived)** Type role mapping for plots:
 - Title/Subtitle: Bold. Axes/ticks/legends/captions: Regular. Notes: Light/Regular. Callouts: Semibold/Bold or Head-Semibold/Bold.
@@ -102,9 +103,13 @@ for ax, title in zip(axs.flat, panel_titles):
 ## Suggested starter tokens
 
 ```python
+from matplotlib import font_manager
+
 ALLEN={"black":"#000000","white":"#FFFFFF","page1":"#F3F0E8","page2":"#DED9D1","gray1":"#AAA39F","gray2":"#737373","blue":"#6464FF","orange":"#FF6E00","green":"#CDEB05","rose":"#FF00FF","maroon":"#CD0F55","teal":"#00A59B","violet":"#8246FF","ochre":"#DC9600","yellow":"#FFEB23"}
 ALLEN_SERIES=[ALLEN[k] for k in ["blue","orange","teal","violet","green","rose","maroon","ochre","yellow"]]
-plt.rcParams.update({"figure.facecolor":ALLEN["white"],"axes.facecolor":ALLEN["white"],"axes.edgecolor":ALLEN["black"],"axes.labelcolor":ALLEN["black"],"xtick.color":ALLEN["gray2"],"ytick.color":ALLEN["gray2"],"grid.color":ALLEN["page2"],"text.color":ALLEN["black"],"axes.prop_cycle":cycler(color=ALLEN_SERIES),"font.family":["Allen Institute Text","Helvetica Neue","Arial","sans-serif"]})
+INSTALLED_FONTS={f.name for f in font_manager.fontManager.ttflist}
+ALLEN_FONT=next((f for f in ["Allen Institute Text","Allen Institute","Arial","Segoe UI","Bahnschrift","Calibri","DejaVu Sans"] if f in INSTALLED_FONTS),"DejaVu Sans")
+plt.rcParams.update({"figure.facecolor":ALLEN["white"],"axes.facecolor":ALLEN["white"],"axes.edgecolor":ALLEN["black"],"axes.labelcolor":ALLEN["black"],"xtick.color":ALLEN["gray2"],"ytick.color":ALLEN["gray2"],"grid.color":ALLEN["page2"],"text.color":ALLEN["black"],"axes.prop_cycle":cycler(color=ALLEN_SERIES),"font.family":ALLEN_FONT})
 ```
 
 ```css
