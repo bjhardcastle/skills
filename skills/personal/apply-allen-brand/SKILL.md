@@ -55,48 +55,16 @@ These recipes are inferred from infographic samples in the cheat sheet, not stat
 
 ## Typography
 
-- Treat typography as a primary brand signal, not a neutral default. In scientific visuals, the Allen look comes from a sharp split between headline-cut framing text and compact text-cut measurement labels.
-- Use `Allen Institute Headline` only for large figure titles, section labels, and major callout numbers above 24 pt. Keep it left-aligned, bold, and tightly composed; do not let it drift into generic centered chart-title styling.
-- Use `Allen Institute Text` for everything below 24 pt: subplot titles, axis labels, tick labels, legends, annotations, captions, and table text. Do not alter its letter spacing; the wider spacing is intentional for legibility at small sizes.
-- Fallback stack: `"Allen Institute Text", "Allen Institute", "Helvetica Neue", Arial, sans-serif`; headline fallback: `"Allen Institute Headline", "Allen Institute Text", "Helvetica Neue", Arial, sans-serif`.
-- If Allen fonts are unavailable, preserve the hierarchy anyway: strong left-aligned figure title, compact local titles, light gray metadata, small regular ticks, and no centered bold defaults.
+- Use Allen Institute fonts when available. The family ships in roman and italic, in light/medium/bold (plus light-italic, regular-italic, bold-italic), with two editions: text and headline.
+- Text edition is for below 24 pt. Do not alter its letter spacing — wider spacing is intentional for legibility.
+- Headline edition is for above 24 pt. Letter-space tightly.
+- Fallback: `"Allen Institute Text", "Allen Institute", "Helvetica Neue", Arial, sans-serif`.
 
-**(derived)** Scientific plot type system:
-- Figure title: Headline Bold, 18-24 pt for paper/report figures or 28-40 pt for dashboards/slides; left aligned; slash-separated subject path works well, e.g. `allen institute/brain science/cell types`.
-- Subtitle/context line: Text Regular, 9-12 pt, `gray2`; include cohort, dataset, method, or date, not decorative copy.
-- Subplot title: Text Bold, 10-12 pt, left aligned, short, with enough pad to clear the axis.
-- Axis labels: Text Regular or Medium, 8.5-10 pt, black; keep units exact and case-preserving.
-- Tick labels: Text Regular, 7.5-9 pt, `gray2`; use fewer ticks before making type smaller.
-- Legend labels and annotations: Text Regular, 8-9.5 pt; reserve Bold for a named highlight or selected series.
-- Captions/notes/source: Text Light or Regular, 7.5-9 pt, `gray2`, below the grid or in a side rail.
+**(derived)** Type role mapping for plots:
+- Title/Subtitle: Bold. Axes/ticks/legends/captions: Regular. Notes: Light/Regular. Callouts: Semibold/Bold or Head-Semibold/Bold.
+- Left-align titles and subtitles
 
 **Text case (derived):** use all lowercase where possible, without capitalization of first letter. Proper nouns included. Do **not** rewrite or recase content where doing so would distort meaning, e.g. gene/protein symbols (e.g. `GFAP`, `Pvalb`), units (`mV`, `Hz`), acronyms with established casing (`ACC`, `MOs`). 
-
-Matplotlib typography helper:
-
-```python
-HEADLINE_FONT = "Allen Institute Headline"
-TEXT_FONT = "Allen Institute Text"
-TYPE = {
-    "figure_title": {"fontfamily": HEADLINE_FONT, "fontsize": 20, "fontweight": "bold"},
-    "subtitle": {"fontfamily": TEXT_FONT, "fontsize": 10, "fontweight": "regular", "color": ALLEN["gray2"]},
-    "subplot_title": {"fontfamily": TEXT_FONT, "fontsize": 11, "fontweight": "bold"},
-    "axis_label": {"fontfamily": TEXT_FONT, "fontsize": 9, "fontweight": "regular"},
-    "tick": {"fontfamily": TEXT_FONT, "fontsize": 8, "color": ALLEN["gray2"]},
-    "note": {"fontfamily": TEXT_FONT, "fontsize": 8, "color": ALLEN["gray2"]},
-}
-plt.rcParams.update({
-    "font.family": [TEXT_FONT, "Helvetica Neue", "Arial", "sans-serif"],
-    "axes.titleweight": "bold",
-    "axes.titlesize": TYPE["subplot_title"]["fontsize"],
-    "axes.labelsize": TYPE["axis_label"]["fontsize"],
-    "xtick.labelsize": TYPE["tick"]["fontsize"],
-    "ytick.labelsize": TYPE["tick"]["fontsize"],
-    "legend.fontsize": 8.5,
-})
-fig.suptitle("allen institute/brain science/cell types", x=0.09, y=0.97, ha="left", **TYPE["figure_title"])
-fig.text(0.09, 0.925, "dataset context / method / cohort", ha="left", **TYPE["subtitle"])
-```
 
 ## Layout and hierarchy (derived)
 
