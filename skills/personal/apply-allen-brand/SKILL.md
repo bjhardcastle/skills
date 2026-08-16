@@ -1,6 +1,6 @@
 ---
 name: apply-allen-brand
-description: Apply Allen Institute brand rules to plots, charts, tables, dashboards, infographics, and scientific visuals. Use when the user mentions using Allen Institute color, typography, layout, icon, slash, or image-treatment conventions.
+description: Use when the user mentions using Allen Institute color, typography, layout, icon, slash, or image-treatment conventions to plots, charts, tables, dashboards, infographics, and scientific visuals. 
 ---
 
 # Allen Institute Brand
@@ -33,9 +33,6 @@ preserve data meaning/apply visual language/
 | accent | Allen Institute Ochre | 220/150/0 | `#DC9600` | 0/32/100/14 |
 | accent | Allen Institute Yellow | 255/235/35 | `#FFEB23` | 0/0/100/0 |
 
-Note: the PDF prints `#8246E1`, which is inconsistent with both its own RGB value and Pantone 266C — treated as a typo in the source document.
-`assets/allen-palette.csv` is a machine-readable version of the above table.
-
 ### Suggested usage
 - `base` for "backgrounds and more factual content"
 - `primary` and `accent` to "bring a sense of vitality, energy, dynamism and boldness"
@@ -51,8 +48,8 @@ Note: the PDF prints `#8246E1`, which is inconsistent with both its own RGB valu
 
 ```python
 ALLEN_HEX={"black":"#000000","white":"#FFFFFF","page1":"#F3F0E8","page2":"#DED9D1","gray1":"#AAA39F","gray2":"#737373","blue":"#6464FF","orange":"#FF6E00","green":"#CDEB05","rose":"#FF00FF","maroon":"#CD0F55","teal":"#00A59B","violet":"#8246FF","ochre":"#DC9600","yellow":"#FFEB23"}
-ALLEN_SERIES=[ALLEN_HEX[k] for k in ["blue", "orange", "teal", "rose", "green", "maroon", "violet", "ochre", "yellow"]]
-plt.rcParams.update({"figure.facecolor":ALLEN_HEX["white"],"axes.facecolor":ALLEN_HEX["white"],"axes.edgecolor":ALLEN_HEX["black"],"axes.labelcolor":ALLEN_HEX["black"],"xtick.color":ALLEN_HEX["gray2"],"ytick.color":ALLEN_HEX["gray2"],"grid.color":ALLEN_HEX["page2"],"text.color":ALLEN_HEX["black"],"axes.prop_cycle":cycler(color=ALLEN_SERIES),"font.family":["Allen Institute Text","Helvetica Neue","Arial","sans-serif"]})
+
+plt.rcParams.update({"figure.facecolor":ALLEN_HEX["white"],"axes.facecolor":ALLEN_HEX["white"],"axes.edgecolor":ALLEN_HEX["black"],"axes.labelcolor":ALLEN_HEX["black"],"xtick.color":ALLEN_HEX["gray2"],"ytick.color":ALLEN_HEX["gray2"],"grid.color":ALLEN_HEX["page2"],"text.color":ALLEN_HEX["black"],"font.family":["Allen Institute Text","Helvetica Neue","Arial","sans-serif"]})
 ```
 
 ```css
@@ -67,6 +64,7 @@ plt.rcParams.update({"figure.facecolor":ALLEN_HEX["white"],"axes.facecolor":ALLE
 - Text edition is for below 24 pt. Do not alter its letter spacing — wider spacing is intentional for legibility.
 - Headline edition is for above 24 pt. Letter-space tightly.
 - Fallback: `"Allen Institute Text", "Allen Institute", "Helvetica Neue", Arial, sans-serif`.
+- the bundled Allen fonts do not include common symbols, such as `±` or `′`. For scientific labels, keep Allen for the words and render missing symbols with mathtext, e.g. `"mean $\\pm$ SEM"` and `"visual d$^{\\prime}$"`. Use ASCII labels such as `"mean +/- SEM"` or `"d-prime"` when mathtext is unsuitable. Avoid relying on `FontProperties(fname=...)` for fallback because it pins the text object to one font file.
 
 **(derived)** Type role mapping for plots:
 - Title/Subtitle: Bold. Axes/ticks/legends/captions: Regular. Notes: Light/Regular. Callouts: Semibold/Bold or Head-Semibold/Bold.
@@ -91,6 +89,8 @@ allen_text = font_manager.FontProperties(fname=font_dir / "AllenInstitutePlusTex
 
 plt.rcParams.update({
     "font.family": ["Allen Institute Plus Text", "Arial", "sans-serif"],
+    "mathtext.fontset": "dejavusans",
+    "mathtext.default": "regular",
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
 })
